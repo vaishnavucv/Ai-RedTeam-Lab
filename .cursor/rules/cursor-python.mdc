@@ -1,0 +1,124 @@
+You are an expert in Python, FastAPI, and secure LLM-based application development.
+
+# Key Principles
+
+* Write concise, technically accurate code with relevant examples.
+* Use functional programming over class-based structures unless managing dependencies.
+* Always modularize: separate routing, services, and utilities.
+* Use descriptive variable names with verbs or intent (e.g., `has_risk`, `is_valid_payload`).
+* Use lowercase with underscores for filenames and folders (e.g., `routes/prompt_lab.py`).
+* Follow RORO (Receive Object, Return Object) pattern for APIs.
+* Enable type hints in all function signatures.
+
+# FastAPI
+
+* Use `def` for sync and `async def` for async functions.
+* Prefer `Depends()` for dependency injection.
+* Use Pydantic models for request/response schema.
+* Structure app using:
+
+  * `main.py` (entry)
+  * `routes/`
+  * `services/`
+  * `utils/`
+  * `config/`
+  * `logs/`
+
+# LLM Lab-Specific Guidelines
+
+* Integrate Groq LLM API via `httpx.AsyncClient`.
+* Accept structured prompts via POST body.
+* Allow modular experiment types: direct injection, indirect, obfuscated.
+* Log user prompts and LLM responses securely.
+* Allow replaying historical prompts from log.
+* Use `.env` for:
+
+  * API key
+  * Model version
+  * Logging path
+
+# Error Handling and Validation
+
+* Use Pydantic for all payload validation.
+* Use early return strategy and guard clauses.
+* Log errors with context (timestamp, input).
+* Sanitize all user input before API transmission.
+* Always wrap LLM requests in `try/except` blocks.
+
+# Dependencies
+
+* `fastapi`
+* `httpx`
+* `python-dotenv`
+* `pydantic`
+* `uvicorn`
+* `aiofiles` or `sqlite3` for logging
+
+# API Conventions
+
+* Route naming: `/chat`, `/log`, `/replay/{id}`
+* Use JSON request/response only.
+* Support both raw and pre-filled payloads.
+* Use UUID or timestamp-based log IDs.
+
+# File Naming Conventions
+
+* Routes: `routes/prompt_routes.py`
+* Services: `services/groq_service.py`
+* Logging: `utils/logger.py`
+* Models: `models/prompt.py`
+* Config: `config/settings.py`
+
+# Logging & Monitoring
+
+* Store logs in `logs/interactions.json`
+* Append mode with newline-delimited JSON
+* Each entry: `timestamp`, `prompt`, `response`, `user_id` (optional)
+
+# Frontend Integration
+
+* Serve HTML+JS static UI
+* Use `fetch('/chat')` in `script.js`
+* Display prettified JSON
+* Show original prompt, system prompt (simulated), and LLM output
+
+# Security Practices
+
+* Do not hardcode secrets; always read from `.env`
+* Validate user inputs against injection templates
+* Block repeated malicious attempts via rate limiting (optional)
+* Escape all rendered HTML from logs on frontend
+
+# Testing Guidelines
+
+* Use `pytest`
+* Create mock Groq API responses for offline testing
+* Validate that all endpoints handle:
+
+  * Missing fields
+  * Long prompt inputs
+  * Invalid JSON bodies
+
+# Deployment
+
+* Use `Dockerfile` + `docker-compose.yml`
+* Expose backend at `8188`, internal port `8088`
+* Mount logs as volumes
+* Use `uvicorn` for ASGI serving
+
+# Documentation
+
+* Add OpenAPI docs via FastAPI (auto-enabled)
+* Document:
+
+  * Payload examples (direct, indirect, obfuscated)
+  * LLM model name
+  * Response format
+
+# Future Ready
+
+* WebSocket support for real-time LLM output (optional)
+* Admin dashboard to monitor prompt logs (optional)
+* Integrate file upload (e.g., HTML docs) for indirect injection testing
+
+> Refer to OWASP LLM Top 10 and Groq API schema for continual improvement.
