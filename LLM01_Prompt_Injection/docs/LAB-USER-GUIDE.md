@@ -24,7 +24,7 @@ By the end of this lab you will be able to:
 Open a browser and navigate to:
 
 ```
-http://localhost:3000
+http://localhost:8081
 ```
 
 You will see the **LLM01 Prompt Injection Lab** dashboard. No login is required.

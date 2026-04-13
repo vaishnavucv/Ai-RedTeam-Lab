@@ -3,7 +3,7 @@
 **Audience:** L1 / L2 Security Operations · AI Red Team Awareness Training  
 **Standard:** OWASP LLM Top 10 — LLM01: Prompt Injection  
 **Model:** TinyLlama via Ollama (local, air-gapped)  
-**Lab URL:** http://localhost:3001
+**Lab URL:** http://localhost:8081
 
 ---
 
@@ -35,7 +35,7 @@ It is listed as **LLM01** — the number one risk in the OWASP LLM Top 10 — be
 
 ## How to Use This Guide
 
-1. **Open the lab** at http://localhost:3001 in your browser
+1. **Open the lab** at http://localhost:8081 in your browser
 2. **Open the guide** for the exercise you are working on (this docs folder)
 3. **Read the Background and Objective** before touching the lab
 4. **Follow the walkthrough steps** in order — try each step in the web app

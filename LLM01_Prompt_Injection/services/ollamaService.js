@@ -1,6 +1,8 @@
 const { Ollama } = require('ollama');
 
-const ollama = new Ollama({ host: 'http://localhost:11434' });
+// In Docker the Ollama service is on a separate container (OLLAMA_HOST env var).
+// Locally it falls back to the standard localhost address.
+const ollama = new Ollama({ host: process.env.OLLAMA_HOST || 'http://localhost:11434' });
 
 const MODEL = 'tinyllama';
 

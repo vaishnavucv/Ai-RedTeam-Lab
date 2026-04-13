@@ -17,7 +17,7 @@ This lab gives you direct, hands-on experience attacking a **deliberately vulner
 The lab web dashboard is accessible at:
 
 ```
-http://localhost:3000
+http://localhost:8081
 ```
 
 All exercises are self-contained in the browser. No additional tools are required.
@@ -61,7 +61,7 @@ The lab runs a local AI assistant with the following configuration:
 | **Role** | Acme Corp customer support assistant |
 | **System prompt** | Contains business rules + a hidden canary token |
 | **Canary token** | `REDTEAM-7419` — embedded in the system prompt as a secret |
-| **Web dashboard** | `http://localhost:3000` |
+| **Web dashboard** | `http://localhost:8081` |
 
 The **canary token** `REDTEAM-7419` is your proof-of-exploitation across all exercises. If you can get the model to output it, you have demonstrated a successful prompt injection.
 
@@ -82,7 +82,7 @@ The **canary token** `REDTEAM-7419` is your proof-of-exploitation across all exe
 
 **Before starting the exercises, spend 5 minutes understanding the UI.**
 
-Open `http://localhost:3000` in your browser. The dashboard has three areas:
+Open `http://localhost:8081` in your browser. The dashboard has three areas:
 
 ### Header (top bar)
 - **Progress dots** — six dots that turn amber (tried) or green (succeeded) as you work through exercises
@@ -119,7 +119,7 @@ Open `http://localhost:3000` in your browser. The dashboard has three areas:
 Open your browser and navigate to:
 
 ```
-http://localhost:3000
+http://localhost:8081
 ```
 
 Confirm the **Ollama Online** badge is green in the top right of the header. If it is red, the AI model is not ready — inform your lab facilitator.
@@ -152,7 +152,7 @@ Create a Markdown file to record your attempts. Use this template:
 
 **Date:**
 **Tester:**
-**Lab URL:** http://localhost:3000
+**Lab URL:** http://localhost:8081
 
 ---
 
@@ -470,7 +470,7 @@ The AI assistant accepted user-controlled instructions that caused it to [descri
 reveal the canary token / adopt an unauthorised persona / repeat its system prompt / etc.].
 
 **Steps to Reproduce:**
-1. Access the assistant at http://localhost:3000
+1. Access the assistant at http://localhost:8081
 2. Select exercise [T1–T6] from the sidebar
 3. Submit the following prompt:
    > [exact prompt that succeeded]
