@@ -3,21 +3,19 @@ version: '3.9'
 services:
 
   # ── Lab — Node.js web app ──────────────────────────────────────────────────
-  # Ollama + TinyLlama run on the host Ubuntu system (not in a container).
-  # The lab container reaches the host Ollama via host.docker.internal,
-  # which is mapped to the host gateway IP using extra_hosts below.
+  # network_mode: host gives the container direct access to the host network.
+  # This means the container reaches Ollama at localhost:11434 with no bridging.
+  # The app binds directly on the host at PORT=8081 — no ports mapping needed.
+  # Dashboard: http://localhost:8081
   lab:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: llm01-lab
-    ports:
-      - "8081:3001"                   # dashboard → http://localhost:8081
+    network_mode: host
     environment:
-      - PORT=3001
-      - OLLAMA_HOST=http://host.docker.internal:11434
-    extra_hosts:
-      - "host.docker.internal:host-gateway"   # Linux: resolves to host IP (Docker 20.10+)
+      - PORT=8081
+      - OLLAMA_HOST=http://localhost:11434
     volumes:
-      - ./logs:/app/logs              # interaction logs persisted to host
+      - ./logs:/app/logs
     restart: unless-stopped

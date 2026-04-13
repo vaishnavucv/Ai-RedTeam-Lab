@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-OLLAMA_BASE="${OLLAMA_HOST:-http://host.docker.internal:11434}"
+OLLAMA_BASE="${OLLAMA_HOST:-http://localhost:11434}"
 MAX_RETRIES=15
 
 echo "-----------------------------------------------"
@@ -21,8 +21,8 @@ until curl -sf "${OLLAMA_BASE}" > /dev/null 2>&1; do
     echo " Fix: Make sure Ollama is running on the host:"
     echo "   ollama serve"
     echo ""
-    echo " Then restart the container:"
-    echo "   docker compose restart lab"
+    echo " Then restart:"
+    echo "   sudo docker-compose up"
     exit 1
   fi
   printf '.'
