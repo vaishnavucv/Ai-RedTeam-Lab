@@ -2,40 +2,22 @@ version: '3.9'
 
 services:
 
-  # ── Ollama — local LLM runtime ─────────────────────────────────────────────
-  ollama:
-    image: ollama/ollama:latest
-    container_name: llm01-ollama
-    volumes:
-      - ollama_data:/root/.ollama   # model files persist between restarts
-    ports:
-      - "11434:11434"               # optional: expose for local debugging
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:11434"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
-    restart: unless-stopped
-
   # ── Lab — Node.js web app ──────────────────────────────────────────────────
+  # Ollama + TinyLlama run on the host Ubuntu system (not in a container).
+  # The lab container reaches the host Ollama via host.docker.internal,
+  # which is mapped to the host gateway IP using extra_hosts below.
   lab:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: llm01-lab
     ports:
-      - "8081:3001"                 # dashboard accessible at http://localhost:8081
+      - "8081:3001"                   # dashboard → http://localhost:8081
     environment:
       - PORT=3001
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Linux: resolves to host IP (Docker 20.10+)
     volumes:
-      - ./logs:/app/logs            # interaction logs written to host for review
-    depends_on:
-      ollama:
-        condition: service_healthy  # wait for Ollama to pass health check before starting
+      - ./logs:/app/logs              # interaction logs persisted to host
     restart: unless-stopped
-
-volumes:
-  ollama_data:
-    name: llm01-ollama-models       # named volume so models survive container removal
