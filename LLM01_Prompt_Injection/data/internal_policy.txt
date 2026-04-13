@@ -1,0 +1,22 @@
+ACME CORP — INTERNAL POLICY DOCUMENT v2.3
+Last updated: 2024-01-15
+
+1. CUSTOMER INTERACTIONS
+   All customer interactions must be handled with professionalism and courtesy.
+   Agents should not make promises about delivery times without checking inventory.
+
+2. REFUND POLICY
+   Refunds are accepted within 30 days of purchase with original receipt.
+   Items must be in original packaging and unused condition.
+
+3. ESCALATION PROCEDURE
+   If a customer complaint cannot be resolved at the first level, escalate to
+   the team lead within 24 hours using the internal ticketing system.
+
+4. DATA PRIVACY
+   Do not share customer personal information with third parties.
+   All data handling must comply with the company privacy policy.
+
+5. PRODUCT INFORMATION
+   Always refer customers to the official product documentation for technical specs.
+   Do not speculate about upcoming product releases.

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Guide — LLM01 Prompt Injection Lab</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0f18;
+      --surface:    #13151f;
+      --surface2:   #1a1d2e;
+      --border:     #252840;
+      --border2:    #2e3350;
+      --accent:     #6c63ff;
+      --accent-dim: #1e1b4b;
+      --danger:     #f43f5e;
+      --danger-dim: #1f0a14;
+      --success:    #22c55e;
+      --success-dim:#052e16;
+      --warn:       #f59e0b;
+      --text:       #e2e8f0;
+      --text2:      #94a3b8;
+      --text3:      #475569;
+      --mono:       'Cascadia Code', 'Fira Mono', 'Consolas', monospace;
+      --radius:     10px;
+      --radius-sm:  6px;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      flex-shrink: 0;
+      height: 52px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 5px 10px;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      transition: all 0.12s;
+      flex-shrink: 0;
+    }
+    .back-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    .header-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .header-sep { flex: 1; }
+    .header-doc-name {
+      font-size: 0.78rem;
+      color: var(--text3);
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 300px;
+    }
+
+    /* ── LAYOUT ── */
+    .layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      overflow: hidden;
+    }
+
+    /* ── NAV ── */
+    nav.guide-nav {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 16px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-section-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0 6px;
+      margin: 10px 0 5px;
+    }
+    .nav-section-label:first-child { margin-top: 0; }
+
+    .guide-nav a {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      transition: all 0.1s;
+    }
+    .guide-nav a:hover { background: var(--surface2); color: var(--text); }
+    .guide-nav a.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: #a5b4fc;
+      font-weight: 700;
+    }
+
+    .nav-num {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      border-radius: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 800;
+      color: var(--text3);
+    }
+    .guide-nav a.active .nav-num {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .diff-badge {
+      font-size: 0.58rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .diff-b { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+    .diff-i { background: #1c1200; color: #f59e0b; border: 1px solid #92400e; }
+    .diff-a { background: #1f0a14; color: #f43f5e; border: 1px solid #9f1239; }
+
+    /* ── CONTENT ── */
+    .content-wrap {
+      overflow-y: auto;
+      padding: 40px 48px;
+      max-width: 860px;
+      width: 100%;
+    }
+
+    /* Loading / error states */
+    .state-msg {
+      color: var(--text3);
+      font-size: 0.88rem;
+      margin-top: 60px;
+      text-align: center;
+    }
+
+    /* ── MARKDOWN RENDERED STYLES ── */
+    #markdownContent h1 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border2);
+    }
+    #markdownContent h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 32px 0 10px;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent);
+    }
+    #markdownContent h3 {
+      font-size: 0.97rem;
+      font-weight: 700;
+      color: #a5b4fc;
+      margin: 22px 0 8px;
+    }
+    #markdownContent h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text2);
+      margin: 16px 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #markdownContent p {
+      font-size: 0.9rem;
+      color: var(--text2);
+      line-height: 1.8;
+      margin: 10px 0;
+    }
+
+    #markdownContent ul, #markdownContent ol {
+      margin: 10px 0 10px 22px;
+    }
+    #markdownContent li {
+      font-size: 0.88rem;
+      color: var(--text2);
+      line-height: 1.75;
+      margin: 3px 0;
+    }
+    #markdownContent li::marker { color: var(--accent); }
+
+    #markdownContent strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    #markdownContent em {
+      color: var(--warn);
+      font-style: italic;
+    }
+
+    #markdownContent a {
+      color: #60a5fa;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    #markdownContent a:hover { color: #93c5fd; }
+
+    #markdownContent code {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #c7d2fe;
+    }
+
+    #markdownContent pre {
+      background: #070b14;
+      border: 1px solid #1e3a5f;
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    #markdownContent pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 0.83rem;
+      color: #93c5fd;
+      line-height: 1.6;
+    }
+
+    #markdownContent blockquote {
+      border-left: 3px solid var(--warn);
+      padding: 10px 16px;
+      margin: 14px 0;
+      background: var(--warn-dim);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+    #markdownContent blockquote p {
+      color: #fcd34d;
+      margin: 0;
+    }
+
+    #markdownContent table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.83rem;
+    }
+    #markdownContent th {
+      background: var(--surface2);
+      color: var(--text);
+      font-weight: 700;
+      padding: 9px 13px;
+      border: 1px solid var(--border2);
+      text-align: left;
+    }
+    #markdownContent td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      vertical-align: top;
+    }
+    #markdownContent tr:nth-child(even) td { background: var(--surface2); }
+
+    #markdownContent hr {
+      border: none;
+      border-top: 1px solid var(--border2);
+      margin: 28px 0;
+    }
+
+    /* Collapsible <details> (hints) */
+    #markdownContent details {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      margin: 8px 0;
+      overflow: hidden;
+    }
+    #markdownContent details summary {
+      padding: 10px 14px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--warn);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+    }
+    #markdownContent details summary::-webkit-details-marker { display: none; }
+    #markdownContent details summary::before {
+      content: '▶  ';
+      font-size: 0.6rem;
+      color: var(--warn);
+    }
+    #markdownContent details[open] summary::before { content: '▼  '; }
+    #markdownContent details > *:not(summary) {
+      padding: 10px 14px 12px;
+      font-size: 0.83rem;
+      color: #fcd34d;
+      line-height: 1.65;
+      border-top: 1px solid var(--border2);
+      background: #1c1200;
+    }
+    #markdownContent details p { color: #fcd34d; margin: 0; }
+
+    /* Checklist items (- [ ] ... ) */
+    #markdownContent input[type=checkbox] {
+      accent-color: var(--accent);
+      margin-right: 7px;
+      cursor: default;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="back-btn">&#8592; Back to Lab</a>
+  <span class="header-title">LLM01 Lab Guide</span>
+  <div class="header-sep"></div>
+  <span class="header-doc-name" id="headerDocName"></span>
+</header>
+
+<div class="layout">
+  <nav class="guide-nav" id="guideNav">
+    <div class="nav-section-label">Overview</div>
+    <a href="?doc=LAB-USER-GUIDE.md" data-doc="LAB-USER-GUIDE.md">
+      <div class="nav-num">&#x1F4D6;</div>
+      <span>User Guide (Start Here)</span>
+    </a>
+    <a href="?doc=README.md" data-doc="README.md">
+      <div class="nav-num">&#x2630;</div>
+      <span>Attack Index &amp; Glossary</span>
+    </a>
+
+    <div class="nav-section-label">Exercises</div>
+    <a href="?doc=T1-Direct-Instruction-Override.md" data-doc="T1-Direct-Instruction-Override.md">
+      <div class="nav-num">T1</div>
+      <span>Direct Override</span>
+      <span class="diff-badge diff-b">Beginner</span>
+    </a>
+    <a href="?doc=T2-RolePlay-Persona-Injection.md" data-doc="T2-RolePlay-Persona-Injection.md">
+      <div class="nav-num">T2</div>
+      <span>Persona Injection</span>
+      <span class="diff-badge diff-b">Beginner</span>
+    </a>
+    <a href="?doc=T3-Hidden-Prompt-Extraction.md" data-doc="T3-Hidden-Prompt-Extraction.md">
+      <div class="nav-num">T3</div>
+      <span>Prompt Extraction</span>
+      <span class="diff-badge diff-b">Beginner</span>
+    </a>
+    <a href="?doc=T4-Multi-Turn-Injection.md" data-doc="T4-Multi-Turn-Injection.md">
+      <div class="nav-num">T4</div>
+      <span>Multi-Turn</span>
+      <span class="diff-badge diff-i">Intermediate</span>
+    </a>
+    <a href="?doc=T5-Indirect-Prompt-Injection.md" data-doc="T5-Indirect-Prompt-Injection.md">
+      <div class="nav-num">T5</div>
+      <span>Indirect / RAG</span>
+      <span class="diff-badge diff-i">Intermediate</span>
+    </a>
+    <a href="?doc=T6-Context-Confusion.md" data-doc="T6-Context-Confusion.md">
+      <div class="nav-num">T6</div>
+      <span>Context Confusion</span>
+      <span class="diff-badge diff-a">Advanced</span>
+    </a>
+  </nav>
+
+  <div class="content-wrap">
+    <div id="markdownContent">
+      <p class="state-msg" id="stateMsg">Loading…</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+<script>
+'use strict';
+
+const params  = new URLSearchParams(location.search);
+const docFile = params.get('doc') || 'README.md';
+
+// Highlight active nav link
+document.querySelectorAll('.guide-nav a').forEach(a => {
+  if (a.dataset.doc === docFile) a.classList.add('active');
+});
+
+// Set header doc name
+const nameMap = {
+  'LAB-USER-GUIDE.md':                'User Guide — How to Use This Lab',
+  'README.md':                        'Attack Index & Glossary',
+  'T1-Direct-Instruction-Override.md':'T1 — Direct Instruction Override',
+  'T2-RolePlay-Persona-Injection.md': 'T2 — Role-Play / Persona Injection',
+  'T3-Hidden-Prompt-Extraction.md':   'T3 — Hidden Prompt Extraction',
+  'T4-Multi-Turn-Injection.md':       'T4 — Multi-Turn Injection',
+  'T5-Indirect-Prompt-Injection.md':  'T5 — Indirect Prompt Injection',
+  'T6-Context-Confusion.md':          'T6 — Context Confusion / Priority Hijacking',
+};
+document.getElementById('headerDocName').textContent = nameMap[docFile] || docFile;
+document.title = (nameMap[docFile] || docFile) + ' — LLM01 Lab Guide';
+
+// Configure marked
+marked.setOptions({
+  gfm: true,
+  breaks: false,
+});
+
+// Fetch and render
+(async () => {
+  const stateMsg = document.getElementById('stateMsg');
+  try {
+    const r = await fetch('/api/docs/' + encodeURIComponent(docFile));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const md = await r.text();
+    const container = document.getElementById('markdownContent');
+    container.innerHTML = marked.parse(md);
+    // Make internal doc links work in the guide viewer
+    container.querySelectorAll('a[href]').forEach(a => {
+      const href = a.getAttribute('href');
+      if (href && href.endsWith('.md') && !href.startsWith('http')) {
+        a.setAttribute('href', '?doc=' + href.split('/').pop());
+      }
+    });
+  } catch (err) {
+    stateMsg.textContent = 'Could not load guide: ' + err.message;
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM01 Prompt Injection Lab</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f18;
+      --surface: #13151f;
+      --surface2: #1a1d2e;
+      --border: #252840;
+      --border2: #2e3350;
+      --accent: #6c63ff;
+      --accent-dim: #1e1b4b;
+      --danger: #f43f5e;
+      --danger-dim: #1f0a14;
+      --success: #22c55e;
+      --success-dim: #052e16;
+      --warn: #f59e0b;
+      --warn-dim: #1c1200;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #475569;
+      --mono: 'Cascadia Code', 'Fira Mono', 'Consolas', monospace;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      flex-shrink: 0;
+      height: 52px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-logo .logo-icon {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 800; color: #fff;
+      flex-shrink: 0;
+    }
+    .header-logo h1 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .header-logo .subtitle {
+      font-size: 0.72rem;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+
+    .header-sep { flex: 1; }
+
+    .progress-track {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text2);
+    }
+    .progress-dots {
+      display: flex;
+      gap: 5px;
+    }
+    .pdot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--border2);
+      transition: background 0.2s;
+      cursor: default;
+      position: relative;
+    }
+    .pdot.tried    { background: var(--warn); }
+    .pdot.succeeded { background: var(--success); }
+    .pdot[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      bottom: 14px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: 0.68rem;
+      padding: 3px 7px;
+      border-radius: 5px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge-online  { background: var(--success-dim); color: var(--success); border: 1px solid var(--success); }
+    .badge-offline { background: var(--danger-dim);  color: var(--danger);  border: 1px solid var(--danger); }
+    .badge-warn    { background: var(--warn-dim);    color: var(--warn);    border: 1px solid var(--warn); }
+    .badge-beginner    { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+    .badge-intermediate { background: #1c1200; color: var(--warn); border: 1px solid #92400e; }
+    .badge-advanced    { background: var(--danger-dim); color: var(--danger); border: 1px solid #9f1239; }
+
+    /* ── LAYOUT ── */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    aside {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Nav section */
+    .nav-section {
+      flex-shrink: 0;
+      padding: 14px 12px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0 4px;
+      margin-bottom: 8px;
+    }
+
+    .type-nav { display: flex; flex-direction: column; gap: 2px; }
+
+    .type-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.1s, border-color 0.1s;
+      position: relative;
+    }
+    .type-item:hover { background: var(--surface2); }
+    .type-item.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+    }
+
+    .type-num {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.68rem; font-weight: 800;
+      color: var(--text3);
+      transition: all 0.15s;
+    }
+    .type-item.active .type-num {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .type-item.tried   .type-num { border-color: var(--warn);    color: var(--warn); }
+    .type-item.active.tried   .type-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .type-item.succeeded .type-num { background: var(--success); border-color: var(--success); color: #fff; }
+
+    .type-text { flex: 1; min-width: 0; }
+    .type-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .type-item.active .type-name { color: #a5b4fc; }
+    .type-sub {
+      font-size: 0.65rem;
+      color: var(--text3);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    .type-status {
+      flex-shrink: 0;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--text3);
+    }
+    .type-item.tried    .type-status { color: var(--warn); }
+    .type-item.succeeded .type-status { color: var(--success); }
+
+    /* Details section */
+    .details-section {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .details-placeholder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      gap: 10px;
+      color: var(--text3);
+    }
+    .details-placeholder .arrow { font-size: 1.8rem; margin-bottom: 4px; }
+    .details-placeholder h3 { font-size: 0.9rem; color: var(--text2); }
+    .details-placeholder p  { font-size: 0.75rem; line-height: 1.6; }
+
+    .scenario-header {
+      flex-shrink: 0;
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .scenario-header-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .scenario-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+      min-width: 0;
+    }
+    .scenario-goal {
+      font-size: 0.73rem;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    /* Guide button */
+    .guide-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 14px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-sm);
+      color: #a5b4fc;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.12s, color 0.12s;
+      text-align: center;
+    }
+    .guide-btn:hover { background: #2d2a6e; color: #c7d2fe; }
+
+    /* Chips label */
+    .chips-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+
+    /* Technique line */
+    .technique-line {
+      font-size: 0.74rem;
+      color: var(--text2);
+      line-height: 1.6;
+      padding: 9px 11px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+    }
+
+    /* Attack chips */
+    .attack-chips { display: flex; flex-direction: column; gap: 5px; }
+    .attack-chip {
+      background: #12142a;
+      border: 1px solid #2a2d5a;
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-size: 0.72rem;
+      color: #a5b4fc;
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s;
+      line-height: 1.4;
+    }
+    .attack-chip:hover { background: #1a1d4a; border-color: var(--accent); }
+
+    /* Doc selector (T5) */
+    .doc-selector { display: flex; gap: 5px; }
+    .doc-btn {
+      flex: 1;
+      padding: 7px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--text3);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.12s;
+      font-family: inherit;
+    }
+    .doc-btn.active { border-color: var(--warn); color: var(--warn); background: var(--warn-dim); }
+    .doc-preview {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 10px;
+      font-size: 0.67rem;
+      color: var(--text3);
+      white-space: pre-wrap;
+      max-height: 130px;
+      overflow-y: auto;
+      font-family: var(--mono);
+      line-height: 1.5;
+    }
+
+    /* ── MAIN PANEL ── */
+    .main-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* Context bar */
+    .context-bar {
+      flex-shrink: 0;
+      padding: 10px 18px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 46px;
+    }
+    .context-scenario { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .context-sep { flex: 1; }
+    .view-prompt-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      border-radius: var(--radius-sm);
+      padding: 5px 10px;
+      font-size: 0.71rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+      width: auto;
+    }
+    .view-prompt-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .view-prompt-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+    /* System prompt panel */
+    .prompt-panel {
+      flex-shrink: 0;
+      background: #070b14;
+      border-bottom: 1px solid #1e3a5f;
+      padding: 12px 18px;
+      display: none;
+    }
+    .prompt-panel.open { display: block; }
+    .prompt-panel-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #3b82f6;
+      margin-bottom: 7px;
+    }
+    .prompt-panel pre {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: #93c5fd;
+      white-space: pre-wrap;
+      max-height: 140px;
+      overflow-y: auto;
+      line-height: 1.55;
+    }
+
+    /* T4 History strip */
+    .history-strip {
+      flex-shrink: 0;
+      padding: 6px 18px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.72rem;
+      color: var(--text2);
+      display: none;
+      align-items: center;
+      gap: 12px;
+    }
+    .history-strip.visible { display: flex; }
+    .history-strip strong { color: var(--warn); }
+    .clear-history-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--text3);
+      font-size: 0.68rem;
+      padding: 3px 9px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+      width: auto;
+    }
+    .clear-history-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* Chat area */
+    .chat-area {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Welcome screen */
+    .welcome {
+      margin: auto;
+      max-width: 520px;
+      text-align: center;
+      padding: 20px;
+    }
+    .welcome-icon {
+      width: 56px; height: 56px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      margin: 0 auto 16px;
+    }
+    .welcome h2 { font-size: 1.2rem; color: var(--text); margin-bottom: 8px; }
+    .welcome p  { font-size: 0.82rem; color: var(--text2); line-height: 1.7; margin-bottom: 14px; }
+    .welcome-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
+    .welcome-tag {
+      font-size: 0.68rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border2);
+      color: var(--text3);
+      background: var(--surface2);
+    }
+
+    /* Chat bubbles */
+    .turn { display: flex; flex-direction: column; gap: 5px; }
+    .turn-label {
+      font-size: 0.63rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text3);
+      padding: 0 2px;
+    }
+    .bubble {
+      padding: 11px 15px;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      line-height: 1.65;
+      max-width: 88%;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .bubble-user {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      align-self: flex-end;
+      color: #c7d2fe;
+    }
+    .bubble-model {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      align-self: flex-start;
+    }
+
+    /* Result card */
+    .result-card {
+      align-self: flex-start;
+      max-width: 88%;
+      border-radius: var(--radius);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      overflow: hidden;
+      font-size: 0.78rem;
+    }
+    .result-card.success { border-color: var(--danger); }
+    .result-card.defended { border-color: var(--success); }
+
+    .result-banner {
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+    .result-card.success .result-banner  { background: var(--danger-dim);  color: var(--danger); }
+    .result-card.defended .result-banner { background: var(--success-dim); color: var(--success); }
+
+    .result-icon { font-size: 1rem; }
+
+    .result-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+    .result-section {}
+    .result-section-label {
+      font-size: 0.61rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      margin-bottom: 4px;
+    }
+    .result-section-text {
+      font-size: 0.75rem;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+    .result-card.success .result-what  { color: #fca5a5; }
+    .result-card.defended .result-what { color: #86efac; }
+
+    .leaked-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .leaked-chip {
+      background: var(--danger-dim);
+      color: var(--danger);
+      border: 1px solid #9f1239;
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-size: 0.67rem;
+      font-weight: 600;
+      font-family: var(--mono);
+    }
+
+    .result-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2px 0;
+    }
+
+    /* Defender spoiler */
+    details.defender-spoiler {
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+      overflow: hidden;
+    }
+    details.defender-spoiler summary {
+      padding: 8px 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--success);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    details.defender-spoiler summary::-webkit-details-marker { display: none; }
+    details.defender-spoiler summary::before {
+      content: '▶';
+      font-size: 0.55rem;
+      transition: transform 0.15s;
+    }
+    details.defender-spoiler[open] summary::before { transform: rotate(90deg); }
+    .defender-content {
+      padding: 10px 12px 12px;
+      font-size: 0.73rem;
+      color: #86efac;
+      line-height: 1.65;
+      border-top: 1px solid var(--border);
+      background: var(--success-dim);
+    }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 13px; height: 13px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* System note */
+    .sys-note {
+      font-size: 0.72rem;
+      color: var(--text3);
+      text-align: center;
+      padding: 4px 0;
+      font-style: italic;
+    }
+
+    /* Input row */
+    .input-row {
+      flex-shrink: 0;
+      padding: 14px 18px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .input-row textarea {
+      flex: 1;
+      resize: none;
+      min-height: 52px;
+      max-height: 160px;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.87rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: auto;
+    }
+    .input-row textarea:focus { border-color: var(--accent); }
+    .input-row textarea:disabled { opacity: 0.5; }
+
+    .btn-send {
+      flex-shrink: 0;
+      padding: 10px 22px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.87rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+      width: auto;
+    }
+    .btn-send:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-clear {
+      flex-shrink: 0;
+      padding: 10px 12px;
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--text3);
+      font-size: 0.78rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+      white-space: nowrap;
+      width: auto;
+    }
+    .btn-clear:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-logo">
+    <div class="logo-icon">LLM</div>
+    <div>
+      <h1>LLM01 Prompt Injection Lab</h1>
+      <div class="subtitle">OWASP LLM Top 10 · Skill Gap Training · L1 / L2</div>
+    </div>
+  </div>
+  <div class="header-sep"></div>
+  <div class="progress-track">
+    <span>Progress:</span>
+    <div class="progress-dots" id="progressDots"></div>
+    <span id="progressLabel">0 / 6</span>
+  </div>
+  <div id="healthBadge" class="badge badge-warn">Connecting…</div>
+</header>
+
+<main>
+  <!-- ── SIDEBAR ── -->
+  <aside>
+    <div class="nav-section">
+      <div class="nav-label">Lab Exercises</div>
+      <nav class="type-nav" id="typeNav"></nav>
+    </div>
+
+    <div class="details-section" id="detailsSection">
+      <!-- Placeholder before selection -->
+      <div class="details-placeholder" id="detailsPlaceholder">
+        <div class="arrow">&#8592;</div>
+        <h3>Select an exercise</h3>
+        <p>Choose a lab type to see its learning objectives, attack technique, and step-by-step hints.</p>
+      </div>
+
+      <!-- Populated when scenario selected -->
+      <div id="detailsContent" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+        <div class="scenario-header" id="scenarioHeader"></div>
+        <div style="flex:1; min-height:0; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px;">
+          <!-- Open guide link -->
+          <a id="guideLink" href="/guide.html" target="_blank" class="guide-btn">
+            &#x1F4D6;&nbsp; Open Step-by-Step Guide
+          </a>
+          <!-- Attack technique one-liner -->
+          <div class="technique-line" id="si-technique"></div>
+          <!-- Example payloads -->
+          <div id="si-attacks-wrap">
+            <div class="chips-label">Example Payloads — click to fill input</div>
+            <div class="attack-chips" id="si-attacks"></div>
+          </div>
+          <!-- T5 doc selector -->
+          <div id="si-docsection" style="display:none;">
+            <div class="chips-label" style="margin-bottom:6px;">Document Source (T5)</div>
+            <div class="doc-selector">
+              <button class="doc-btn active" data-doc="clean">Clean Policy</button>
+              <button class="doc-btn" data-doc="poisoned">Poisoned Doc</button>
+            </div>
+            <div id="docPreview" class="doc-preview" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN PANEL ── -->
+  <div class="main-panel">
+    <!-- Context bar -->
+    <div class="context-bar" id="contextBar">
+      <span class="context-scenario" id="contextScenarioName" style="color:var(--text3);">No exercise selected</span>
+      <div class="context-sep"></div>
+      <button class="view-prompt-btn" id="viewPromptBtn">View System Prompt</button>
+    </div>
+
+    <!-- System prompt panel -->
+    <div class="prompt-panel" id="promptPanel">
+      <div class="prompt-panel-label">Active System Prompt (what the model was instructed to be)</div>
+      <pre id="promptContent">Loading…</pre>
+    </div>
+
+    <!-- T4 history strip -->
+    <div class="history-strip" id="historyStrip">
+      <span>Multi-turn session: <strong id="turnCount">0</strong> turn(s) in memory</span>
+      <div style="flex:1;"></div>
+      <button class="clear-history-btn" id="clearHistoryBtn">Reset session</button>
+    </div>
+
+    <!-- Chat area -->
+    <div class="chat-area" id="chatArea">
+      <div class="welcome" id="welcomeScreen">
+        <div class="welcome-icon">&#x1F6E1;</div>
+        <h2>LLM01 Prompt Injection Lab</h2>
+        <p>
+          This lab gives you hands-on experience with all six classes of prompt injection attack against a deliberately vulnerable AI system.
+          Select an exercise from the sidebar to begin. Start with <strong>Type 1</strong> if this is your first time.
+        </p>
+        <p style="font-size:0.75rem; color:var(--text3);">
+          Each exercise includes a learning objective, real-world context, attack technique guidance, and a defender tip revealed after each attempt.
+        </p>
+        <div class="welcome-tags">
+          <span class="welcome-tag">OWASP LLM01</span>
+          <span class="welcome-tag">TinyLlama · Ollama</span>
+          <span class="welcome-tag">6 Attack Types</span>
+          <span class="welcome-tag">Hands-On</span>
+          <span class="welcome-tag">L1 / L2 Training</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input row -->
+    <div class="input-row">
+      <textarea id="userInput" placeholder="Select an exercise, then enter your attack prompt… (Ctrl+Enter to send)" rows="2" disabled></textarea>
+      <button class="btn-clear" id="clearChatBtn">Clear</button>
+      <button class="btn-send"  id="sendBtn" disabled>Send Attack</button>
+    </div>
+  </div>
+</main>
+
+<script>
+'use strict';
+
+// ── State ──────────────────────────────────────────────────────────────────
+let scenarios       = [];
+let currentScenario = null;
+let currentDoc      = 'clean';
+let systemPromptContent = '';
+
+const docFileMap = {
+  'type1': 'T1-Direct-Instruction-Override.md',
+  'type2': 'T2-RolePlay-Persona-Injection.md',
+  'type3': 'T3-Hidden-Prompt-Extraction.md',
+  'type4': 'T4-Multi-Turn-Injection.md',
+  'type5': 'T5-Indirect-Prompt-Injection.md',
+  'type6': 'T6-Context-Confusion.md',
+};
+
+// Per-scenario progress: { type1: 'tried'|'succeeded', ... }
+const progress = {};
+
+// ── Boot ────────────────────────────────────────────────────────────────────
+(async () => {
+  await Promise.all([checkHealth(), loadPrompt(), loadScenarios()]);
+  buildProgressDots();
+})();
+
+async function checkHealth() {
+  const badge = document.getElementById('healthBadge');
+  try {
+    const r = await fetch('/api/health');
+    const d = await r.json();
+    badge.textContent = d.status === 'ok' ? 'Ollama Online' : 'Error';
+    badge.className = 'badge ' + (d.status === 'ok' ? 'badge-online' : 'badge-offline');
+  } catch {
+    badge.textContent = 'Ollama Offline';
+    badge.className = 'badge badge-offline';
+  }
+}
+
+async function loadPrompt() {
+  try {
+    const r = await fetch('/api/prompt');
+    const d = await r.json();
+    systemPromptContent = d.content || '';
+    document.getElementById('promptContent').textContent = systemPromptContent;
+  } catch {
+    document.getElementById('promptContent').textContent = '(could not load)';
+  }
+}
+
+async function loadScenarios() {
+  const r = await fetch('/api/scenarios');
+  scenarios = await r.json();
+
+  const nav = document.getElementById('typeNav');
+  nav.innerHTML = '';
+  const diffMap = { Beginner: 'B', Intermediate: 'I', Advanced: 'A' };
+
+  scenarios.forEach((s, i) => {
+    const item = document.createElement('div');
+    item.className = 'type-item';
+    item.dataset.id = s.id;
+    item.innerHTML = `
+      <div class="type-num">T${i + 1}</div>
+      <div class="type-text">
+        <div class="type-name">${esc(s.name)}</div>
+        <div class="type-sub">${esc(s.difficulty || '')} · ${esc((s.goal || '').slice(0, 36))}…</div>
+      </div>
+      <div class="type-status" id="status-${s.id}">—</div>
+    `;
+    item.addEventListener('click', () => selectScenario(s, item));
+    nav.appendChild(item);
+  });
+}
+
+function buildProgressDots() {
+  const container = document.getElementById('progressDots');
+  container.innerHTML = '';
+  scenarios.forEach((s, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'pdot';
+    dot.id = `pdot-${s.id}`;
+    dot.title = `T${i + 1}: ${s.name}`;
+    container.appendChild(dot);
+  });
+}
+
+// ── Scenario selection ──────────────────────────────────────────────────────
+function selectScenario(s, itemEl) {
+  currentScenario = s;
+  currentDoc = 'clean';
+
+  // Nav highlight
+  document.querySelectorAll('.type-item').forEach(el => el.classList.remove('active'));
+  itemEl.classList.add('active');
+
+  // Context bar
+  document.getElementById('contextScenarioName').textContent = s.name;
+  document.getElementById('contextScenarioName').style.color = '';
+
+  // History strip (T4 only)
+  const strip = document.getElementById('historyStrip');
+  strip.classList.toggle('visible', !!s.usesMemory);
+  document.getElementById('turnCount').textContent = '0';
+
+  // Enable input
+  document.getElementById('userInput').disabled = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('userInput').placeholder = 'Enter your attack prompt… (Ctrl+Enter to send)';
+
+  // Show details panel
+  document.getElementById('detailsPlaceholder').style.display = 'none';
+  const dc = document.getElementById('detailsContent');
+  dc.style.display = 'flex';
+
+  // Scenario header
+  const diffClass = (s.difficulty || 'Beginner').toLowerCase();
+  document.getElementById('scenarioHeader').innerHTML = `
+    <div class="scenario-header-top">
+      <span class="scenario-title">${esc(s.name)}</span>
+      <span class="badge badge-${diffClass}">${esc(s.difficulty || 'Beginner')}</span>
+    </div>
+    <div class="scenario-goal">${esc(s.goal)}</div>
+  `;
+
+  // Guide link — point to the matching markdown doc
+  const docFile = docFileMap[s.id] || 'README.md';
+  document.getElementById('guideLink').href = `/guide.html?doc=${docFile}`;
+
+  // Attack technique one-liner
+  document.getElementById('si-technique').textContent = s.attackTechnique || '';
+
+  // Example payload chips
+  const chipsEl = document.getElementById('si-attacks');
+  chipsEl.innerHTML = '';
+  (s.exampleAttacks || []).forEach(a => {
+    const chip = document.createElement('div');
+    chip.className = 'attack-chip';
+    chip.textContent = a;
+    chip.addEventListener('click', () => {
+      document.getElementById('userInput').value = a;
+      document.getElementById('userInput').focus();
+    });
+    chipsEl.appendChild(chip);
+  });
+
+  // T5 doc selector
+  const docSection = document.getElementById('si-docsection');
+  docSection.style.display = s.usesRetrievedContext ? 'block' : 'none';
+  if (s.usesRetrievedContext) {
+    // Reset to clean doc
+    document.querySelectorAll('.doc-btn').forEach(b => b.classList.toggle('active', b.dataset.doc === 'clean'));
+    fetchAndShowDoc('clean');
+  }
+
+  // Clear welcome screen
+  document.getElementById('welcomeScreen')?.remove();
+}
+
+// ── System prompt viewer ──────────────────────────────────────────────────
+document.getElementById('viewPromptBtn').addEventListener('click', () => {
+  const btn = document.getElementById('viewPromptBtn');
+  const panel = document.getElementById('promptPanel');
+  const isOpen = panel.classList.toggle('open');
+  btn.classList.toggle('active', isOpen);
+  btn.textContent = isOpen ? 'Hide System Prompt' : 'View System Prompt';
+});
+
+// ── Doc selector (T5) ─────────────────────────────────────────────────────
+document.querySelectorAll('.doc-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.doc-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentDoc = btn.dataset.doc;
+    fetchAndShowDoc(currentDoc);
+  });
+});
+
+async function fetchAndShowDoc(docKey) {
+  if (!currentScenario?.usesRetrievedContext) return;
+  const filename = currentScenario.dataFiles?.[docKey] || 'internal_policy.txt';
+  try {
+    const r = await fetch(`/api/data/${filename}`);
+    const text = await r.text();
+    document.getElementById('docPreview').textContent = text.slice(0, 700) + (text.length > 700 ? '\n…' : '');
+  } catch {
+    document.getElementById('docPreview').textContent = '(could not load file)';
+  }
+}
+
+// ── Clear history (T4) ────────────────────────────────────────────────────
+document.getElementById('clearHistoryBtn').addEventListener('click', async () => {
+  if (!currentScenario) return;
+  await fetch('/api/chat/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scenarioType: currentScenario.id }),
+  });
+  document.getElementById('turnCount').textContent = '0';
+  appendSysNote('Session history cleared. Start a fresh multi-turn sequence.');
+});
+
+// ── Clear chat ─────────────────────────────────────────────────────────────
+document.getElementById('clearChatBtn').addEventListener('click', () => {
+  chatArea().innerHTML = '';
+});
+
+// ── Send ───────────────────────────────────────────────────────────────────
+document.getElementById('sendBtn').addEventListener('click', sendMessage);
+document.getElementById('userInput').addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') sendMessage();
+});
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text  = input.value.trim();
+  if (!text || !currentScenario) return;
+
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = true;
+  input.value = '';
+
+  appendUserBubble(text);
+  const thinkId = appendThinking();
+
+  try {
+    const body = { scenarioType: currentScenario.id, userInput: text };
+    if (currentScenario.usesRetrievedContext) body.dataFile = currentDoc;
+
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    removeEl(thinkId);
+
+    // Use text → sanitize → parse to survive TinyLlama control characters
+    const rawText = await r.text();
+    const cleanText = rawText.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '');
+
+    if (!r.ok) {
+      let errMsg = r.statusText;
+      try { errMsg = JSON.parse(cleanText).error || errMsg; } catch {}
+      appendSysNote('Error: ' + errMsg);
+      return;
+    }
+
+    let data;
+    try {
+      data = JSON.parse(cleanText);
+    } catch (parseErr) {
+      // JSON broken beyond repair — show whatever raw text the server sent
+      appendSysNote('Response received but could not be parsed. Raw: ' + cleanText.slice(0, 200));
+      return;
+    }
+
+    appendModelBubble(data.response || '(empty response)');
+    appendResultCard(data);
+
+    // Update progress
+    const sid = currentScenario.id;
+    if (data.attackSuccess) {
+      progress[sid] = 'succeeded';
+    } else if (!progress[sid]) {
+      progress[sid] = 'tried';
+    }
+    updateProgress(sid);
+
+    // T4 turn count
+    if (currentScenario.usesMemory) {
+      document.getElementById('turnCount').textContent = data.historyLength;
+    }
+
+  } catch (err) {
+    removeEl(thinkId);
+    appendSysNote('Network error: ' + err.message);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+// ── Progress ──────────────────────────────────────────────────────────────
+function updateProgress(sid) {
+  const state = progress[sid];
+  const dot = document.getElementById(`pdot-${sid}`);
+  if (dot) {
+    dot.className = 'pdot ' + (state || '');
+  }
+  // Nav item
+  const items = document.querySelectorAll('.type-item');
+  items.forEach(item => {
+    if (item.dataset.id === sid) {
+      item.classList.remove('tried', 'succeeded');
+      if (state) item.classList.add(state);
+      const statusEl = item.querySelector('.type-status');
+      if (statusEl) statusEl.textContent = state === 'succeeded' ? '✓' : state === 'tried' ? '●' : '—';
+    }
+  });
+  // Label
+  const succeeded = Object.values(progress).filter(v => v === 'succeeded').length;
+  document.getElementById('progressLabel').textContent = `${succeeded} / 6`;
+}
+
+// ── Chat helpers ──────────────────────────────────────────────────────────
+function chatArea() { return document.getElementById('chatArea'); }
+
+function appendUserBubble(text) {
+  const turn = el('div', 'turn');
+  turn.innerHTML = `<div class="turn-label">You — Attacker</div>
+    <div class="bubble bubble-user">${esc(text)}</div>`;
+  chatArea().appendChild(turn);
+  scrollBottom();
+}
+
+function appendModelBubble(text) {
+  const turn = el('div', 'turn');
+  turn.innerHTML = `<div class="turn-label">Model Response</div>
+    <div class="bubble bubble-model">${esc(text)}</div>`;
+  chatArea().appendChild(turn);
+  scrollBottom();
+}
+
+function appendResultCard(data) {
+  const success = data.attackSuccess;
+  const sc = data.scenario;
+
+  const card = el('div', `result-card ${success ? 'success' : 'defended'}`);
+
+  // Banner
+  const banner = el('div', 'result-banner');
+  banner.innerHTML = success
+    ? `<span class="result-icon">&#x26A0;</span> INJECTION SUCCEEDED`
+    : `<span class="result-icon">&#x1F6E1;</span> ATTACK DEFENDED`;
+  card.appendChild(banner);
+
+  const body = el('div', 'result-body');
+
+  // What happened
+  const whatText = success ? (sc.onSuccess || 'The attack was successful.') : (sc.onFail || 'The model defended this attempt.');
+  const whatSection = el('div', 'result-section');
+  whatSection.innerHTML = `<div class="result-section-label">${success ? 'What Happened' : 'What to Try Next'}</div>
+    <div class="result-section-text result-what">${esc(whatText)}</div>`;
+  body.appendChild(whatSection);
+
+  // Leaked terms
+  if (success && data.matched?.length) {
+    const leakSection = el('div', 'result-section');
+    leakSection.innerHTML = `<div class="result-section-label">Leaked / Matched Terms</div>
+      <div class="leaked-chips">${data.matched.map(m => `<span class="leaked-chip">${esc(m)}</span>`).join('')}</div>`;
+    body.appendChild(leakSection);
+  }
+
+  // Divider
+  body.appendChild(el('hr', 'result-divider'));
+
+  // Why dangerous
+  if (sc.whyDangerous) {
+    const whySection = el('div', 'result-section');
+    whySection.innerHTML = `<div class="result-section-label">Why This Is Dangerous in Production</div>
+      <div class="result-section-text">${esc(sc.whyDangerous)}</div>`;
+    body.appendChild(whySection);
+  }
+
+  // Defender tip (spoiler)
+  if (sc.defenderNote) {
+    const details = el('details', 'defender-spoiler');
+    details.innerHTML = `<summary>&#x1F512; Defender Tip — click to reveal</summary>
+      <div class="defender-content">${esc(sc.defenderNote)}</div>`;
+    body.appendChild(details);
+  }
+
+  card.appendChild(body);
+  chatArea().appendChild(card);
+  scrollBottom();
+}
+
+let thinkCounter = 0;
+function appendThinking() {
+  const id = `think-${++thinkCounter}`;
+  const div = el('div', 'bubble bubble-model');
+  div.id = id;
+  div.innerHTML = '<span class="spinner"></span>Model is responding…';
+  chatArea().appendChild(div);
+  scrollBottom();
+  return id;
+}
+
+function appendSysNote(msg) {
+  const div = el('div', 'sys-note');
+  div.textContent = msg;
+  chatArea().appendChild(div);
+  scrollBottom();
+}
+
+function removeEl(id) {
+  document.getElementById(id)?.remove();
+}
+
+function scrollBottom() {
+  const a = chatArea();
+  a.scrollTop = a.scrollHeight;
+}
+
+function el(tag, cls) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  return e;
+}
+
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
