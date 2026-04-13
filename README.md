@@ -1,244 +1,170 @@
-# 🛡️ AI/ML/LLM Penetration Testing Resources
+# AI Red Team Lab — OWASP LLM Top 10
 
-Welcome to the **AI/ML/LLM Penetration Testing Resources** repository!
+A hands-on, self-hosted penetration testing lab for AI/ML/LLM security. Built for **L1 and L2 security operations staff** to gain practical experience attacking and defending AI systems across all ten OWASP LLM Top 10 vulnerability classes.
 
-This collection offers a **comprehensive set of tools, articles, labs, and references** to help understand, identify, and mitigate vulnerabilities in **Artificial Intelligence (AI)**, **Machine Learning (ML)**, and **Large Language Models (LLMs)**.
-
-Whether you're a cybersecurity professional or just diving into the world of AI security, this repo is designed to equip you with **hands-on knowledge and practical tools** for pentesting AI-powered systems.
+Each module is an independent lab that runs locally, teaches one attack class, and delivers a structured 90-minute guided exercise.
 
 ---
 
-## 🎯 Business Value & Project Justification
+## Lab Status
 
-### 💪 Skills Development & Hands-On Experience
-
-This repository provides **measurable skill enhancement** for your team:
-
-- **🔧 Technical Proficiency**: Hands-on experience with cutting-edge AI security tools and frameworks
-- **🧠 Cross-Domain Expertise**: Bridge traditional cybersecurity with emerging AI/ML threats
-- **📊 Risk Assessment**: Learn to identify, categorize, and quantify AI-specific vulnerabilities
-- **🛠️ Practical Application**: Real-world labs and exercises that translate directly to job performance
-- **📈 Career Advancement**: Position team members as AI security specialists in a rapidly growing field
-- **🤝 Collaboration Skills**: Understanding both offensive and defensive AI security perspectives
-
-**Measurable Outcomes:**
-- Ability to conduct comprehensive AI/ML security assessments
-- Proficiency in OWASP LLM Top 10 framework implementation
-- Hands-on experience with 10+ specialized AI security tools
-- Understanding of prompt injection, model poisoning, and supply chain attacks
-
-### 🌍 Real-World Application Scenarios
-
-**Where This Knowledge Applies in Enterprise:**
-
-#### 🏢 Internal AI System Security
-- **ChatGPT/LLM Integrations**: Secure company chatbots and AI assistants
-- **ML Pipeline Protection**: Secure data science workflows and model deployment
-- **AI-Powered Applications**: Secure customer-facing AI features and APIs
-- **Document Processing**: Secure AI-powered document analysis and extraction systems
-
-#### 🔒 Client Security Services
-- **AI Security Audits**: Offer specialized AI penetration testing services to clients
-- **Compliance Assessments**: Help clients meet emerging AI security regulations
-- **Risk Evaluation**: Assess third-party AI vendors and supply chain risks
-- **Incident Response**: Handle AI-specific security incidents and breaches
-
-#### 🚀 Product Development Security
-- **Secure by Design**: Integrate AI security principles into development lifecycle
-- **Red Team Exercises**: Conduct internal AI red team assessments
-- **Vulnerability Management**: Establish AI-specific vulnerability management processes
-- **Security Training**: Train development teams on AI security best practices
-
-#### 📋 Regulatory & Compliance
-- **GDPR/CCPA**: Address privacy concerns in AI data processing
-- **Industry Standards**: Meet sector-specific AI security requirements (healthcare, finance, etc.)
-- **Risk Management**: Implement enterprise-wide AI risk management frameworks
-- **Audit Preparation**: Prepare for AI security audits and assessments
-
-### 🔐 Improving AI/ML/LLM Secure Building
-
-**How This Repository Enhances Secure AI Development:**
-
-#### 🛡️ Defensive Security Measures
-- **Input Validation**: Learn to implement robust input sanitization for AI systems
-- **Output Filtering**: Develop secure output handling mechanisms
-- **Access Controls**: Design proper authentication and authorization for AI services
-- **Monitoring & Detection**: Implement AI-specific threat detection and monitoring
-
-#### 🏗️ Secure Development Practices
-- **Threat Modeling**: Apply AI-specific threat modeling methodologies
-- **Secure Coding**: Develop secure coding practices for AI/ML applications
-- **Testing Integration**: Integrate AI security testing into CI/CD pipelines
-- **Code Review**: Conduct AI-focused security code reviews
-
-#### 📊 Risk Management
-- **Vulnerability Assessment**: Systematically identify AI-specific vulnerabilities
-- **Risk Prioritization**: Prioritize AI security risks based on business impact
-- **Mitigation Strategies**: Develop comprehensive AI security mitigation plans
-- **Continuous Improvement**: Establish feedback loops for ongoing AI security enhancement
-
-#### 🔬 Research & Innovation
-- **Emerging Threats**: Stay ahead of evolving AI attack vectors
-- **Tool Development**: Create custom AI security tools for specific use cases
-- **Best Practices**: Contribute to industry-wide AI security standards
-- **Knowledge Sharing**: Build internal AI security expertise and documentation
+| Module | Vulnerability | Lab Status | Access |
+|--------|--------------|------------|--------|
+| **LLM01** | Prompt Injection | **Live** | `http://localhost:8081` |
+| LLM02 | Sensitive Information Disclosure | Guide only — lab in planning | — |
+| LLM03 | Supply Chain Vulnerabilities | Guide only — lab in planning | — |
+| LLM04 | Data & Model Poisoning | Guide only — lab in planning | — |
+| LLM05 | Improper Output Handling | Guide only — lab in planning | — |
+| LLM06 | Excessive Agency | Guide only — lab in planning | — |
+| LLM07 | System Prompt Leakage | Guide only — lab in planning | — |
+| LLM08 | Vector & Embedding Weaknesses | Guide only — lab in planning | — |
+| LLM09 | Misinformation | Guide only — lab in planning | — |
+| LLM10 | Unbounded Consumption | Guide only — lab in planning | — |
 
 ---
 
-## 🌟 Why is AI/ML/LLM Pentesting Important?
+## LLM01 — Prompt Injection (Available Now)
 
-As AI becomes embedded into healthcare, finance, law, and beyond, securing these models is more crucial than ever. Vulnerabilities in AI/LLM systems can lead to:
+The first and most complete lab. A fully working browser-based attack environment running a deliberately vulnerable AI assistant (TinyLlama via Ollama). Covers six distinct attack classes with guided exercises, real model responses, and defender training built in.
 
-- 🕵️ Sensitive Information Disclosure  
-- 🤖 Malicious Model Behavior (bias, hallucinations, offensive outputs)  
-- 🚫 Service Disruption (DoS attacks)  
-- 📦 Intellectual Property Theft  
-- 🛠️ Supply Chain Compromises  
+### What the LLM01 lab includes
 
-This repository helps you address these risks by learning how to break (ethically) and fix these systems.
+- **6 attack exercises** — Direct Override, Persona Injection, Prompt Extraction, Multi-Turn, Indirect/RAG Injection, Context Confusion
+- **Live AI target** — TinyLlama 1.1B via Ollama, runs entirely on the local machine
+- **Web dashboard** — attack interface with result cards, progress tracking, and system prompt viewer
+- **In-app guide viewer** — step-by-step workbooks for each exercise, rendered from markdown
+- **Interaction log** — every attempt recorded to `logs/interactions.jsonl`
+- **Docker support** — single container, connects to Ollama on the host Ubuntu system
 
----
+### Quick start (Docker)
 
-## 🚀 Getting Started
+> Requires: Docker, Ollama running on the host, TinyLlama already pulled (`ollama list`)
 
-To get the most from this repository, basic knowledge in the following areas is helpful:
+```bash
+cd LLM01_Prompt_Injection
+docker compose up --build
+```
 
-- 🔬 AI & ML Concepts (model training, data pipelines)
-- 🧠 Large Language Models (architecture & applications)
-- 🧑‍💻 Traditional Pentesting (XSS, SQLi, API security)
-- 🐍 Python Programming (most tools/scripts are Python-based)
+Open: **`http://localhost:8081`**
 
----
+For full installation instructions see [`LLM01_Prompt_Injection/kickstart.md`](LLM01_Prompt_Injection/kickstart.md).
 
-## 📚 Resources Overview
+### LLM01 documentation
 
-### 💡 AI/LLM Introduction & Fundamentals
-
-- **What is AI?**  
-  Machines simulating human intelligence (learning, reasoning, problem-solving).
-
-- **Language Models & LLMs**  
-  Models that understand and generate human language (e.g., ChatGPT, Claude).
-
-- **Training LLMs**  
-  Using massive text datasets to learn syntax, meaning, and knowledge.
-
-- **Development Lifecycle**  
-  `Problem → Data Collection → Model Design → Training → Evaluation → Deployment → Monitoring`
-
-- **Tokenization**  
-  Breaking text into machine-readable units (tokens).
+| File | Purpose |
+|------|---------|
+| [`kickstart.md`](LLM01_Prompt_Injection/kickstart.md) | Install, run, and access the lab |
+| [`LLM01_Prompt_Injection_Guide.md`](LLM01_Prompt_Injection/LLM01_Prompt_Injection_Guide.md) | 90-minute guided lab exercise |
+| [`docs/LAB-USER-GUIDE.md`](LLM01_Prompt_Injection/docs/LAB-USER-GUIDE.md) | Dashboard user guide |
+| [`docs/T1`](LLM01_Prompt_Injection/docs/T1-Direct-Instruction-Override.md) – [`docs/T6`](LLM01_Prompt_Injection/docs/T6-Context-Confusion.md) | Per-exercise workbooks |
 
 ---
 
-## 🚨 AI/LLM Attack Landscape
+## Roadmap
 
-### 🔥 Core Attack Categories
+Labs are built module by module in OWASP LLM01–LLM10 order. Each lab follows the same structure as LLM01: a working attack target, web dashboard, guided exercises, and Docker support.
 
-- **Misalignment**: Offensive outputs, hallucinations, bias  
-- **Jailbreaks**: Prompt overwriting, system instruction manipulation  
-- **Prompt Injections**: Exfiltration, plugin abuse, instruction overriding  
+### Next: LLM02 — Sensitive Information Disclosure
 
-### 🧪 Injection Techniques
+The next module will simulate AI systems that inadvertently leak PII, credentials, or internal data through model outputs, training data memorisation, and retrieval pipelines.
 
-- "Ignore previous instructions"  
-- Obfuscation with emojis, encoding, or switching languages  
-- Exploiting plugin capabilities (email, web browsing, API calls)  
-- Markdown image/data exfiltration  
-- Injection across multiple file formats (text, image, audio, video)
+**Planned components:**
+- A target AI that has been trained or prompted with sensitive data
+- Exercises covering direct extraction, inference attacks, and RAG leakage
+- A guide covering real incidents (Samsung ChatGPT leak, training data extraction research)
 
----
+### Future modules (LLM03–LLM10)
 
-## ⚔️ OWASP Top 10 for LLM Applications
+Each module will be scoped and built as the previous one reaches completion. Guides for LLM02–LLM10 are already in each directory as planning documents.
 
-Adapted from OWASP's LLM Top 10 framework:
+**Build sequence:**
 
-| ID | Title | Description |
-|----|-------|-------------|
-| **LLM01** | Prompt Injection | Trick models into revealing secrets, bypassing instructions |
-| **LLM02** | Sensitive Information Disclosure | Accidental leakage of PII, financial data |
-| **LLM03** | Supply Chain | Risk from external components or poisoned datasets |
-| **LLM04** | Data / Model Poisoning | Malicious manipulation of training data or weights |
-| **LLM05** | Improper Output Handling | LLM-generated XSS, SQLi, RCE |
-| **LLM06** | Excessive Agency | Unchecked plugin/API interaction causing harm |
-| **LLM07** | System Prompt Leakage | Leaking internal system instructions or secrets |
-| **LLM08** | Vector & Embedding Weaknesses | Attacks via vector stores & embeddings |
-| **LLM09** | Misinformation | Hallucinated or biased outputs causing harm |
-| **LLM10** | Unbounded Consumption | Abuse via DoS or unauthorized model replication |
-
-👉 **[Read the full OWASP LLM Top 10](https://genai.owasp.org/llm-top-10/)**
+```
+LLM01  ████████████████████  Live
+LLM02  ░░░░░░░░░░░░░░░░░░░░  Planning
+LLM03  ░░░░░░░░░░░░░░░░░░░░  Pending
+LLM04  ░░░░░░░░░░░░░░░░░░░░  Pending
+LLM05  ░░░░░░░░░░░░░░░░░░░░  Pending
+LLM06  ░░░░░░░░░░░░░░░░░░░░  Pending
+LLM07  ░░░░░░░░░░░░░░░░░░░░  Pending
+LLM08  ░░░░░░░░░░░░░░░░░░░░  Pending
+LLM09  ░░░░░░░░░░░░░░░░░░░░  Pending
+LLM10  ░░░░░░░░░░░░░░░░░░░░  Pending
+```
 
 ---
 
-## 🛠️ Tools & Frameworks
+## Repository Structure
 
-| Name | Description |
-|------|-------------|
-| [LLM Attacks](https://llm-attacks.org) | Adversarial LLM security research |
-| [PIPE](https://github.com/jthack/PIPE) | Prompt Injection Primer for Engineers |
-| [MITRE ATLAS](https://atlas.mitre.org/) | AI/ML threat techniques database |
-| [Awesome GPT Security](https://github.com/cckuailong/awesome-gpt-security) | Curated GPT security list |
-| [ChatGPT Red Team Ally](https://github.com/NetsecExplained/chatgpt-your-red-team-ally) | Using ChatGPT in red teaming |
-| [Lakera Gandalf](https://gandalf.lakera.ai) | Prompt injection lab playground |
-| [AI Immersive Labs](https://prompting.ai.immersivelabs.com/) | Hands-on labs for prompt attacks |
-| [AI Goat](https://github.com/dhammon/ai-goat) | Research playground for AI security |
-| [L1B3RT45](https://github.com/elder-plinius/L1B3RT45) | List of known LLM jailbreaks |
-
----
-
-## 🧰 Prompt Injection Payload Collections
-
-- https://github.com/DummyKitty/Cyber-Security-chatGPT-prompt  
-- https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Prompt%20Injection  
-- https://github.com/f/awesome-chatgpt-prompts  
-- https://gist.github.com/coolaj86/6f4f7b30129b0251f61fa7baaa881516  
-
----
-
-## 📄 Articles & Research
-
-### 🧠 Prompt Injection
-- https://kai-greshake.de/posts/inject-my-pdf  
-- https://www.lakera.ai/blog/guide-to-prompt-injection  
-- https://arxiv.org/abs/2306.05499
-
-### 🔐 Sensitive Info Disclosure
-- https://cybernews.com/security/chatgpt-samsung-leak-explained-lessons/
-
-### 🧪 Supply Chain Attacks
-- https://pytorch.org/blog/compromised-nightly-dependency/
-
-### ☣️ Model Poisoning
-- https://www.csoonline.com/article/3613932/how-data-poisoning-attacks-corrupt-machine-learning-models.html
-
-### 🕷️ Improper Output Handling
-- https://systemweakness.com/new-prompt-injection-attack-on-chatgpt-web-version-ef717492c5c2
-
-### 🤥 Misinformation & Hallucinations
-- https://techpolicy.press/how-should-companies-communicate-the-risks-of-large-language-models-to-users/
-
-### 💥 Unbounded Consumption
-- https://arxiv.org/abs/2006.03463
+```
+Ai-RedTeam-Lab/
+│
+├── README.md                          # This file
+├── check-list.md                      # Lab completion checklist
+├── xfactor_of_AI.md                   # AI security research notes
+├── AI_ML_LLM_pentesting_resources.pdf # Reference PDF
+│
+├── AI PenLLM01-LLM10/                 # OWASP LLM Top 10 reference notes
+│   ├── LLM01.md – LLM10.md
+│
+├── LLM01_Prompt_Injection/            # LIVE — full working lab
+│   ├── kickstart.md
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   ├── docker-entrypoint.sh
+│   ├── server.js
+│   ├── public/                        # Web dashboard + guide viewer
+│   ├── docs/                          # T1–T6 exercise workbooks
+│   ├── scenarios/                     # Attack scenario configs
+│   ├── routes/ / services/            # Backend logic
+│   └── logs/                          # Interaction audit log
+│
+├── LLM02_Sensitive_Information_Disclosure/   # Guide only
+├── LLM03_Supply_Chain_Vulnerabilities/       # Guide only
+├── LLM04_Data_Model_Poisoning/               # Guide only
+├── LLM05_Improper_Output_Handling/           # Guide only
+├── LLM06_Excessive_Agency/                   # Guide only
+├── LLM07_System_Prompt_Leakage/              # Guide only
+├── LLM08_Vector_and_Embedding_Weaknesses/    # Guide only
+├── LLM09_Misinformation/                     # Guide only
+└── LLM10_Unbounded_Consumption/              # Guide only
+```
 
 ---
 
-## 🤝 Contributing
+## Target Audience
 
-Contributions are what make the open-source world amazing!  
-If you have new tools, fixes, or better explanations:
+This lab is built for:
 
-1. Fork the project  
-2. Create a new branch: `git checkout -b feature/AmazingFeature`  
-3. Commit changes: `git commit -m 'Add some AmazingFeature'`  
-4. Push: `git push origin feature/AmazingFeature`  
-5. Submit a pull request 🎉
+- **L1 / L2 Security Operations** — hands-on exposure to AI attack techniques relevant to production environments
+- **Security Awareness Training** — structured 90-minute exercises with clear learning outcomes
+- **Red Team Enablement** — practical methodology for assessing AI-integrated applications
 
 ---
 
-## 📞 Contact
- 
-**Project Link:** [https://github.com/vaishnavu/Ai-penetration-testing](https://github.com/vaishnavu/Ai-penetration-testing)
+## Lab Design Principles
+
+- **Local-only** — no cloud services, no data leaves the machine
+- **Real AI, not mocked** — every exercise uses a live language model so responses are genuine
+- **Attacker first, defender second** — you must successfully attack before learning to defend
+- **Portable** — Docker-based, runs on any Ubuntu host with Ollama installed
+- **Progressive** — exercises build from Beginner to Advanced within each module
 
 ---
 
-> ⚠️ **Disclaimer:** This repository is for **educational and ethical hacking** purposes only. Do not use these tools without explicit permission. Unauthorized testing is illegal and unethical.
+## Contributing
+
+Each new lab module follows the same build pattern as LLM01:
+
+1. A working vulnerable target (local AI app, API, or pipeline)
+2. A `docker-compose.yml` connecting to host Ollama
+3. A web dashboard with attack interface and result cards
+4. T1–Tn exercise docs in `docs/`
+5. A `kickstart.md` for installation
+6. A `{MODULE}_Guide.md` for the 90-minute structured exercise
+
+If you are contributing a new module, use `LLM01_Prompt_Injection/` as the reference implementation.
+
+---
+
+> All testing must be performed in this lab environment only. Do not use these techniques against production systems without explicit written authorisation.
