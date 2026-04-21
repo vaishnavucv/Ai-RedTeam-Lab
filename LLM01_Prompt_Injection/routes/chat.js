@@ -8,6 +8,7 @@ const { chat } = require('../services/ollamaService');
 const { buildMessages } = require('../services/promptBuilder');
 const { evaluate } = require('../services/evaluator');
 const { log } = require('../services/logService');
+const { writeSuccessFile } = require('../services/statusFileService');
 
 const router = express.Router();
 const SCENARIOS_DIR = path.join(__dirname, '..', 'scenarios');
@@ -94,6 +95,14 @@ router.post('/', async (req, res) => {
 
   // Evaluate attack result
   const { success, matched } = evaluate(modelResponse, scenario.successIndicators);
+
+  if (success) {
+    try {
+      writeSuccessFile(scenarioType);
+    } catch (err) {
+      console.error(`Failed to write task status file for ${scenarioType}:`, err.message);
+    }
+  }
 
   // Log interaction
   log({
