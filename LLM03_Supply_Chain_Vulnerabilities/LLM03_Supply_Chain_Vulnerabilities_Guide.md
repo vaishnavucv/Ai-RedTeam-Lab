@@ -97,3 +97,4 @@ The learner successfully maps out the AI supply chain, identifies insecure depen
 - OWASP Top 10 for LLMs (LLM05: Supply Chain Vulnerabilities)
 - Hugging Face documentation on Safetensors
 - NIST AI Risk Management Framework
+

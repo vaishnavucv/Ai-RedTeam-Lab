@@ -60,3 +60,4 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.listen(PORT, () => {
   console.log(`LLM01 Prompt Injection Lab running at http://localhost:${PORT}`);
 });
+

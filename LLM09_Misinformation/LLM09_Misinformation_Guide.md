@@ -96,3 +96,4 @@ Learners will understand that LLMs are probabilistic text generators, not knowle
 ## 11. Reference Base
 - OWASP Top 10 for LLMs (LLM09: Overreliance)
 - Research on Sycophancy in Large Language Models
+

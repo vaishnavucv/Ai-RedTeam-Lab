@@ -16,3 +16,4 @@ function log(entry) {
 }
 
 module.exports = { log };
+

@@ -560,3 +560,4 @@ This lab is most effective when the trainer:
 5. Ends with T6 and a group discussion on why complexity increases risk in multi-agent systems
 
 The **result card Defender Tips** are designed to drive discussion — after each exercise, ask learners: "How would you implement this control in an AI system your organisation currently uses?"
+

@@ -35,3 +35,4 @@ echo " Starting lab server on port ${PORT:-3001} ..."
 echo "-----------------------------------------------"
 
 exec node server.js
+

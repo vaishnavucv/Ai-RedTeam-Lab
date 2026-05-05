@@ -36,3 +36,4 @@ function writeSuccessFile(scenarioType) {
 }
 
 module.exports = { writeSuccessFile };
+

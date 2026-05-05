@@ -259,3 +259,4 @@ A successfully exploited indirect injection in an agentic AI could:
 ---
 
 *Next exercise: [T6 — Context Confusion / Priority Hijacking](T6-Context-Confusion.md)*
+

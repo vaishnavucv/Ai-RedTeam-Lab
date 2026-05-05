@@ -20,3 +20,4 @@ Last updated: 2024-01-15
 5. PRODUCT INFORMATION
    Always refer customers to the official product documentation for technical specs.
    Do not speculate about upcoming product releases.
+

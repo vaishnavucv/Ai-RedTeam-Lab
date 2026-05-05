@@ -43,3 +43,4 @@
     "test-cov": "istanbul cover --print=none node_modules/mocha/bin/_mocha -- --reporter dot test/ && istanbul report lcov text-summary"
   }
 }
+

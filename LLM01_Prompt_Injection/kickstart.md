@@ -473,3 +473,4 @@ Once the dashboard is open at `http://localhost:8081` and the badge is green:
 1. **90-minute guided lab** — read `LLM01_Prompt_Injection_Guide.md` for the full structured exercise plan
 2. **In-app user guide** — click any exercise in the sidebar, then click **Open Step-by-Step Guide**
 3. **Start with T1** — click **T1 — Direct Instruction Override**, click **View System Prompt**, follow the steps
+

@@ -32,3 +32,4 @@ function evaluate(response, successIndicators = []) {
 }
 
 module.exports = { evaluate };
+

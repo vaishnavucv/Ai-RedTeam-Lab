@@ -332,3 +332,4 @@ The counter shows how many exercises you have successfully completed out of six.
 ---
 
 *For detailed step-by-step instructions on any individual exercise, use the **Open Step-by-Step Guide** button from the lab dashboard.*
+

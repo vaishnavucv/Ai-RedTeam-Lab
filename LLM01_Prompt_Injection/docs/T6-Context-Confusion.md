@@ -279,3 +279,4 @@ Return to the [README](README.md) to review the full attack taxonomy and confirm
 2. Review the `logs/interactions.jsonl` file — it contains a full record of every attack you attempted
 3. Identify which of the six attack types apply to AI tools currently used in your organisation
 4. Escalate any identified risks to your security team using the defender notes as a guide
+

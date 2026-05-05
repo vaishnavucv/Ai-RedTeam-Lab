@@ -92,3 +92,4 @@ The learner successfully manipulates the vector retrieval process to expose data
 ## 11. Reference Base
 - Prompt Injection in RAG applications
 - Vector Database security best practices (e.g., Pinecone/Milvus RBAC)
+

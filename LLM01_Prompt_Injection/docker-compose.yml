@@ -21,3 +21,4 @@ services:
       - ./logs:/app/logs
       - /tmp:/host-tmp
     restart: unless-stopped
+
